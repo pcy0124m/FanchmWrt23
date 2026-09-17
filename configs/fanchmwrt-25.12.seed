@@ -100,7 +100,21 @@ CONFIG_PACKAGE_openssh-sftp-server=y
 CONFIG_PACKAGE_zoneinfo-asia=y
 
 # ============================================================
-# 八、overlay 迁到移动硬盘
+# 八、IPTV 组播
+#   igmpproxy  : IGMP 代理,最常用
+#   udpxy      : 组播转 HTTP 单播,手机/平板也能看
+#   udpxrec    : 组播录制
+#   kmod-ipt-ipopt : IP 选项匹配,部分运营商 IPTV 需要
+# ============================================================
+CONFIG_PACKAGE_igmpproxy=y
+CONFIG_PACKAGE_udpxy=y
+CONFIG_PACKAGE_udpxrec=y
+CONFIG_PACKAGE_kmod-ipt-ipopt=y
+CONFIG_PACKAGE_mcproxy=y
+CONFIG_PACKAGE_iptables-mod-ipopt=y
+
+# ============================================================
+# 九、overlay 迁到移动硬盘
 #   blkid / mkfs.ext4 / e2fsck 由 e2fsprogs 提供
 # ============================================================
 CONFIG_PACKAGE_e2fsprogs=y

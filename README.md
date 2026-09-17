@@ -43,6 +43,7 @@
 | 应用程序中心 | `luci-app-fwx-app-center` |
 | 广告过滤 | `adblock-fast`（默认开 AdAway） |
 | Web 终端 | `luci-app-ttyd` |
+| 组播 IPTV | igmpproxy + udpxy + udpxrec |
 | overlay 外置 | 插移动硬盘自动做 extroot |
 | 存储补充 | exFAT / NTFS3 / 中文文件名 / e2fsprogs |
 

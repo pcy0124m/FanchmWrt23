@@ -43,6 +43,25 @@ if [ -f "${EXTRA_FEEDS}" ]; then
 fi
 
 # ---------------------------------------------------------------------------
+# 把源码里所有 FanchmWrt 字样替换为 OpenWrt
+# 这样系统信息 / LuCI / banner 等全部显示 OpenWrt
+# ---------------------------------------------------------------------------
+log "将源码中的 FanchmWrt 替换为 OpenWrt"
+(
+    cd "${SOURCE_DIR}"
+    # 替换所有文本文件中的 FanchmWrt -> OpenWrt, 跳过 .git 和二进制
+    find . -type f \
+        -not -path './.git/*' \
+        -not -path './bin/*' \
+        -not -path './build_dir/*' \
+        -not -path './staging_dir/*' \
+        -not -path './tmp/*' \
+        -exec grep -Il 'FanchmWrt' {} + 2>/dev/null \
+    | xargs -r sed -i 's/FanchmWrt/OpenWrt/g; s/fanchmwrt/openwrt/g'
+)
+log "替换完成"
+
+# ---------------------------------------------------------------------------
 # 在这里追加你自己的源码级定制, 例如:
 #
 # ( cd "${SOURCE_DIR}" && git apply "${PROJECT_ROOT}/patches/0001-my-fix.patch" )

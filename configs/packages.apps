@@ -1,0 +1,29 @@
+# FanchmWrt 追加应用清单
+#
+# 每行一个包名，构建时会被转换为 CONFIG_PACKAGE_<包名>=y 追加到 .config。
+# 以 # 开头的行会被忽略。空行忽略。
+#
+# 官方 DEFAULT_PACKAGES.router 已经内置:
+#   luci-app-fwx-appfilter / dashboard / feature / user / record ...
+#   luci-app-ddns / upnp / wol / autoreboot / uhttpd
+# 所以这三项不要再重复勾选。
+#
+# 下面这些来自 OpenWrt 官方 packages/luci feed, 按需去掉行首 #。
+# 完整说明见 docs/APPS.md。
+#
+# ---- 局域网共享 ----
+#luci-app-samba4
+#luci-app-minidlna
+#luci-app-vsftpd
+#
+# ---- 下载 ----
+#luci-app-aria2
+#luci-app-transmission
+#
+# ---- 网络增强 ----
+#luci-app-zerotier
+#luci-app-wifischedule
+#
+# ---- 监控与系统 ----
+#luci-app-nlbwmon
+#luci-app-commands

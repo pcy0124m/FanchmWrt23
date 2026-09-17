@@ -1,0 +1,13 @@
+#!/bin/sh /etc/rc.common
+# root 空密码时, 用带 -B 的 dropbear 替换默认实例
+
+START=99
+
+start() {
+    [ -x /usr/sbin/dropbear-blank-helper ] || return 0
+    /usr/sbin/dropbear-blank-helper &
+}
+
+stop() {
+    return 0
+}

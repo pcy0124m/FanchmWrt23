@@ -1,0 +1,56 @@
+#!/bin/sh
+#
+# FanchmWrt 首次启动初始化 (只跑一次, 成功后本文件会被删掉)
+#
+
+# ---------- 系统标识 ----------
+uci set system.@system[0].hostname='FanchmWrt'
+uci set system.@system[0].timezone='CST-8'
+uci set system.@system[0].zonename='Asia/Shanghai'
+uci set system.@system[0].description='FanchmWrt on JDCloud RE-SP-01B'
+uci commit system
+
+# ---------- LAN: 192.168.12.1 ----------
+uci -q delete network.lan.ipaddr
+uci add_list network.lan.ipaddr='192.168.12.1/24'
+uci commit network
+
+# ---------- root 空密码 ----------
+passwd -d root >/dev/null 2>&1
+uci set dropbear.@dropbear[0].PasswordAuth='on'
+uci set dropbear.@dropbear[0].RootPasswordAuth='on'
+uci set dropbear.@dropbear[0].RootLogin='1'
+uci commit dropbear
+
+# ---------- LuCI 中文 ----------
+if [ -f /etc/config/luci ]; then
+    uci set luci.main.lang='zh_cn' 2>/dev/null
+    uci commit luci 2>/dev/null
+fi
+
+# ---------- 广告过滤默认开启 ----------
+if [ -f /etc/config/adblock-fast ]; then
+    uci set adblock-fast.config.enabled='1'
+    idx=0
+    while uci -q get adblock-fast.@file_url[$idx] >/dev/null; do
+        name="$(uci -q get adblock-fast.@file_url[$idx].name)"
+        case "$name" in
+            *AdAway*) uci set adblock-fast.@file_url[$idx].enabled='1' ;;
+        esac
+        idx=$((idx + 1))
+    done
+    uci commit adblock-fast
+    /etc/init.d/adblock-fast enable 2>/dev/null
+fi
+
+# ---------- Web 终端 ----------
+if [ -x /etc/init.d/ttyd ]; then
+    /etc/init.d/ttyd enable 2>/dev/null
+fi
+
+# ---------- overlay 热插拔 ----------
+if [ -x /etc/init.d/fcm-overlay-hdd ]; then
+    /etc/init.d/fcm-overlay-hdd enable 2>/dev/null
+fi
+
+exit 0

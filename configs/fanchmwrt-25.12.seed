@@ -1,0 +1,100 @@
+#
+# FanchmWrt 种子配置 (defconfig seed)
+#
+# 源码 : https://github.com/fanchmwrt/fanchmwrt  分支 fanchmwrt-25.12.4
+# 设备 : 京东云无线宝一代 / JDCloud RE-SP-01B
+# SoC  : MediaTek MT7621 (ramips/mt7621)
+# 硬件 : 32MB SPI-NOR Flash / 256MB DDR3 RAM
+# 可见固件分区: 0x50000 - 0x1b00000  =>  27328k
+#
+# 用法: 复制为 <buildroot>/.config 后执行 make defconfig
+#       正常流程请直接跑 scripts/build.sh
+#
+# 官方 DEFAULT_PACKAGES.router 已经带上:
+#   luci, luci-theme-fanchmwrt,
+#   luci-app-fwx-appfilter / dashboard / feature / macfilter / network /
+#   record / resources / user / system / session-stat / user-record /
+#   mac-blacklist / record-whitelist / dashboard-setting,
+#   luci-app-ddns / upnp / autoreboot / wol / uhttpd,
+#   block-mount, kmod-usb-storage, kmod-fs-vfat, kmod-fs-ext4, kmod-tun ...
+# 这里只补设备选择、语言包、文件管理器、广告过滤、应用程序中心、
+# overlay 外置硬盘工具。
+#
+
+# ============================================================
+# 一、目标平台
+# ============================================================
+CONFIG_TARGET_ramips=y
+CONFIG_TARGET_ramips_mt7621=y
+CONFIG_TARGET_ramips_mt7621_DEVICE_jdcloud_re-sp-01b=y
+
+# ============================================================
+# 二、镜像格式
+# ============================================================
+CONFIG_TARGET_ROOTFS_SQUASHFS=y
+CONFIG_TARGET_ROOTFS_INITRAMFS=y
+
+# ============================================================
+# 三、中文界面
+#   主题用官方 luci-theme-fanchmwrt, 不要再塞 argon
+# ============================================================
+CONFIG_PACKAGE_luci-i18n-base-zh-cn=y
+CONFIG_PACKAGE_luci-i18n-firewall-zh-cn=y
+CONFIG_PACKAGE_luci-i18n-package-manager-zh-cn=y
+CONFIG_PACKAGE_luci-i18n-ddns-zh-cn=y
+CONFIG_PACKAGE_luci-i18n-upnp-zh-cn=y
+CONFIG_PACKAGE_luci-i18n-wol-zh-cn=y
+
+# ============================================================
+# 四、文件管理器 (用户额外需求)
+#   luci-app-filebrowser 是官方 LuCI 纯前端模块, 约 10KB
+# ============================================================
+CONFIG_PACKAGE_luci-app-filebrowser=y
+CONFIG_PACKAGE_luci-i18n-filebrowser-zh-cn=y
+
+# ============================================================
+# 四.1、应用程序中心 (官方 fanchmwrt-packages)
+# ============================================================
+CONFIG_PACKAGE_luci-app-fwx-app-center=y
+
+# ============================================================
+# 四.2、广告过滤
+#   adblock-fast 比 adblock 轻, 适合 256MB RAM
+# ============================================================
+CONFIG_PACKAGE_adblock-fast=y
+CONFIG_PACKAGE_luci-app-adblock-fast=y
+CONFIG_PACKAGE_luci-i18n-adblock-fast-zh-cn=y
+
+# ============================================================
+# 五、Web 终端
+# ============================================================
+CONFIG_PACKAGE_luci-app-ttyd=y
+CONFIG_PACKAGE_luci-i18n-ttyd-zh-cn=y
+CONFIG_PACKAGE_ttyd=y
+
+# ============================================================
+# 六、存储补充
+#   官方默认已有 ext4 / vfat / usb-storage
+#   这里补 exFAT / NTFS / 中文文件名, 方便 U 盘用
+# ============================================================
+CONFIG_PACKAGE_kmod-fs-exfat=y
+CONFIG_PACKAGE_kmod-fs-ntfs3=y
+CONFIG_PACKAGE_kmod-nls-cp936=y
+CONFIG_PACKAGE_kmod-nls-utf8=y
+CONFIG_PACKAGE_kmod-usb-storage-uas=y
+
+# ============================================================
+# 七、常用命令行
+# ============================================================
+CONFIG_PACKAGE_curl=y
+CONFIG_PACKAGE_nano=y
+CONFIG_PACKAGE_htop=y
+CONFIG_PACKAGE_openssh-sftp-server=y
+CONFIG_PACKAGE_zoneinfo-asia=y
+
+# ============================================================
+# 八、overlay 迁到移动硬盘
+#   blkid / mkfs.ext4 / e2fsck 由 e2fsprogs 提供
+# ============================================================
+CONFIG_PACKAGE_e2fsprogs=y
+CONFIG_PACKAGE_tune2fs=y

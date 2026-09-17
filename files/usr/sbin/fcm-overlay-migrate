@@ -1,0 +1,183 @@
+#!/bin/sh
+#
+# 把 overlay 迁到移动硬盘 (OpenWrt extroot)
+#
+# 只动两类分区, 有数据的盘跳过:
+#   1. LABEL = FCM_OVERLAY
+#   2. U 盘恰好一个分区, 且没有任何文件系统
+#
+# 流程: 格式化(如需) -> 复制 /overlay -> 写 fstab -> 重启一次
+# 拔掉硬盘后仍回落到 Flash overlay, 不会变砖
+#
+
+STAMP=/etc/fcm-overlay.conf
+LOG=/var/log/fcm-overlay.log
+MNT=/mnt/fcm-overlay
+LABEL=FCM_OVERLAY
+LOCK=/var/lock/fcm-overlay.lock
+REBOOTING=/tmp/fcm-overlay-rebooting
+
+log() {
+    echo "$(date '+%F %T') $*" >> "$LOG"
+    logger -t fcm-overlay "$*"
+}
+
+overlay_already_on_disk() {
+    src="$(awk '$2=="/overlay"{print $1}' /proc/mounts)"
+    case "$src" in
+        /dev/sd*|/dev/mmcblk*) return 0 ;;
+    esac
+    return 1
+}
+
+is_usb() {
+    d="$1"
+    sys="/sys/class/block/${d}"
+    [ -e "$sys" ] || return 1
+    readlink -f "$sys" 2>/dev/null | grep -q '/usb' && return 0
+    [ "$(cat "$sys/removable" 2>/dev/null)" = "1" ] && return 0
+    return 1
+}
+
+part_busy() {
+    grep -q "^/dev/${1} " /proc/mounts && return 0
+    return 1
+}
+
+dev_uuid() {
+    p="$1"
+    if command -v blkid >/dev/null 2>&1; then
+        blkid -s UUID -o value "$p" 2>/dev/null && return 0
+    fi
+    block info "$p" 2>/dev/null | sed -n 's/.*UUID="\([^"]*\)".*/\1/p' | head -n1
+}
+
+dev_label() {
+    p="$1"
+    if command -v blkid >/dev/null 2>&1; then
+        blkid -s LABEL -o value "$p" 2>/dev/null && return 0
+    fi
+    block info "$p" 2>/dev/null | sed -n 's/.*LABEL="\([^"]*\)".*/\1/p' | head -n1
+}
+
+dev_type() {
+    p="$1"
+    if command -v blkid >/dev/null 2>&1; then
+        blkid -s TYPE -o value "$p" 2>/dev/null && return 0
+    fi
+    block info "$p" 2>/dev/null | sed -n 's/.*TYPE="\([^"]*\)".*/\1/p' | head -n1
+}
+
+mkdir -p /var/lock /var/log
+[ -f "$REBOOTING" ] && exit 0
+if [ -f "$LOCK" ]; then
+    pid="$(cat "$LOCK" 2>/dev/null)"
+    [ -n "$pid" ] && kill -0 "$pid" 2>/dev/null && exit 0
+fi
+echo $$ > "$LOCK"
+trap 'rm -f "$LOCK"' EXIT
+
+overlay_already_on_disk && exit 0
+
+TARGET=""
+REBOOT_PENDING=0
+
+# 已记录的设备还在就直接用
+if [ -f "$STAMP" ]; then
+    # shellcheck disable=SC1090
+    . "$STAMP"
+    if [ "${REBOOT_PENDING:-0}" = "1" ]; then
+        log "已经重启过一次, overlay 仍在 Flash, 不再重启。检查硬盘和 fstab.overlay"
+        exit 0
+    fi
+    [ -n "$OVERLAY_DEV" ] && [ -b "$OVERLAY_DEV" ] && TARGET="$OVERLAY_DEV"
+fi
+
+# LABEL 匹配
+if [ -z "$TARGET" ]; then
+    for p in /dev/sd[a-z][0-9]*; do
+        [ -b "$p" ] || continue
+        b="${p#/dev/}"
+        is_usb "$b" || continue
+        part_busy "$b" && continue
+        [ "$(dev_label "$p")" = "$LABEL" ] || continue
+        TARGET="$p"
+        break
+    done
+fi
+
+# 空分区 (无文件系统, 整盘仅 1 个分区)
+if [ -z "$TARGET" ]; then
+    for disk in /sys/class/block/sd[a-z]; do
+        [ -e "$disk" ] || continue
+        name="$(basename "$disk")"
+        is_usb "$name" || continue
+        npart=0
+        part=""
+        for pp in /sys/class/block/${name}[0-9]*; do
+            [ -e "$pp" ] || continue
+            npart=$((npart + 1))
+            part="$(basename "$pp")"
+        done
+        [ "$npart" = "1" ] || continue
+        part_busy "$part" && continue
+        [ -z "$(dev_type "/dev/${part}")" ] || continue
+        TARGET="/dev/${part}"
+        log "空分区 ${TARGET}, 格式化 ext4 LABEL=${LABEL}"
+        if ! mkfs.ext4 -F -L "$LABEL" "$TARGET" >/dev/null 2>&1; then
+            log "mkfs.ext4 失败"
+            exit 1
+        fi
+        break
+    done
+fi
+
+[ -n "$TARGET" ] && [ -b "$TARGET" ] || exit 0
+
+log "准备 ${TARGET}"
+
+mkdir -p "$MNT"
+if ! mount -t ext4 -o rw,noatime "$TARGET" "$MNT"; then
+    e2fsck -y "$TARGET" >/dev/null 2>&1 || true
+    mount -t ext4 -o rw,noatime "$TARGET" "$MNT" || {
+        log "mount 失败"
+        exit 1
+    }
+fi
+
+if [ ! -d "$MNT/upper" ]; then
+    log "复制 overlay"
+    mkdir -p "$MNT/upper" "$MNT/work"
+    if [ -d /overlay/upper ]; then
+        cp -a /overlay/upper/. "$MNT/upper/" 2>/dev/null || true
+    fi
+    if [ -d /overlay/work ]; then
+        mkdir -p "$MNT/work"
+    fi
+fi
+mkdir -p "$MNT/upper" "$MNT/work"
+sync
+umount "$MNT" 2>/dev/null || umount -l "$MNT" 2>/dev/null || true
+
+UUID="$(dev_uuid "$TARGET")"
+[ -n "$UUID" ] || {
+    log "读不到 UUID"
+    exit 1
+}
+
+touch /etc/config/fstab
+uci -q delete fstab.overlay
+uci set fstab.overlay='mount'
+uci set fstab.overlay.uuid="$UUID"
+uci set fstab.overlay.target='/overlay'
+uci set fstab.overlay.fstype='ext4'
+uci set fstab.overlay.options='rw,noatime'
+uci set fstab.overlay.enabled='1'
+uci set fstab.overlay.enabled_fsck='1'
+uci commit fstab
+
+printf 'OVERLAY_DEV=%s\nUUID=%s\nLABEL=%s\nREBOOT_PENDING=1\n' "$TARGET" "$UUID" "$LABEL" > "$STAMP"
+log "fstab 已指向 ${TARGET} (${UUID}), 重启以启用 extroot"
+touch "$REBOOTING"
+reboot
+exit 0

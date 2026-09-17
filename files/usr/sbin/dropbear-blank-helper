@@ -1,0 +1,18 @@
+#!/bin/sh
+# 若 root 为空密码, 重启 dropbear 并带上 -B
+# 由 /etc/rc.local 和 init.d/dropbear-blank 调用
+
+hash="$(awk -F: '$1=="root"{print $2}' /etc/shadow 2>/dev/null)"
+[ -z "$hash" ] || exit 0
+
+# 已经有带 -B 的进程
+if pidof dropbear >/dev/null 2>&1; then
+    for pid in $(pidof dropbear); do
+        tr '\0' ' ' < "/proc/${pid}/cmdline" 2>/dev/null | grep -q -- ' -B' && exit 0
+    done
+fi
+
+/etc/init.d/dropbear stop >/dev/null 2>&1
+sleep 1
+# -B 允许空密码, -R 自动生成 host key, -p 22
+exec /usr/sbin/dropbear -B -R -p 22

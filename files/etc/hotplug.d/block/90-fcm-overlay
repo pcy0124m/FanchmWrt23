@@ -1,0 +1,17 @@
+#!/bin/sh
+# USB 存储插入时尝试把 overlay 迁到移动硬盘
+
+[ "$ACTION" = "add" ] || exit 0
+[ -n "$DEVNAME" ] || exit 0
+
+case "$DEVNAME" in
+    sd[a-z]|mmcblk[0-9]) exit 0 ;;
+    sd[a-z][0-9]*|mmcblk[0-9]p[0-9]*) ;;
+    *) exit 0 ;;
+esac
+
+# 避免跟 block-mount 抢, 稍等内核和分区表就绪
+sleep 2
+
+[ -x /usr/sbin/fcm-overlay-migrate ] || exit 0
+/usr/sbin/fcm-overlay-migrate

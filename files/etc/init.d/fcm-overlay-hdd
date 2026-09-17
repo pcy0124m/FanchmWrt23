@@ -1,0 +1,14 @@
+#!/bin/sh /etc/rc.common
+# overlay 迁到移动硬盘: 启动时尝试一次, 之后靠热插拔脚本
+
+START=99
+STOP=10
+
+start() {
+    [ -x /usr/sbin/fcm-overlay-migrate ] || return 0
+    /usr/sbin/fcm-overlay-migrate
+}
+
+stop() {
+    return 0
+}

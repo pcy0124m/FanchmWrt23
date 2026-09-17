@@ -22,7 +22,7 @@
 
 ---
 
-## 刷 FanchmWrt
+## 刷 OpenWrt
 
 文件：
 

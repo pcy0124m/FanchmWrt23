@@ -1,0 +1,7 @@
+DISTRIB_ID='OpenWrt'
+DISTRIB_RELEASE=$(cat /etc/openwrt_version 2>/dev/null || echo 'unknown')
+DISTRIB_REVISION=$(cat /etc/openwrt_revision 2>/dev/null || echo 'unknown')
+DISTRIB_TARGET='ramips/mt7621'
+DISTRIB_ARCH='mipsel_24kc'
+DISTRIB_DESCRIPTION="OpenWrt $(cat /etc/openwrt_version 2>/dev/null || echo 'unknown')"
+DISTRIB_TAINTS=''

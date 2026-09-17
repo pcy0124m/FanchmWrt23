@@ -1,4 +1,4 @@
-name: Build FanchmWrt
+name: Build OpenWrt
 
 # ============================================================================
 # 云端编译: 推送代码后 GitHub 自动编出固件, 不占用本机资源
@@ -105,7 +105,7 @@ jobs:
       - name: 上传固件产物
         uses: actions/upload-artifact@v4
         with:
-          name: FanchmWrt-jdcloud_re-sp-01b
+          name: OpenWrt-jdcloud_re-sp-01b
           path: |
             build/fanchmwrt/bin/targets/ramips/mt7621/*.bin
             build/fanchmwrt/bin/targets/ramips/mt7621/sha256sums

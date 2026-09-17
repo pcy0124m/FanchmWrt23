@@ -43,20 +43,13 @@ if [ -f "${EXTRA_FEEDS}" ]; then
 fi
 
 # ---------------------------------------------------------------------------
-# 把源码里所有 FanchmWrt 字样替换为 OpenWrt
-# 这样系统信息 / LuCI / banner 等全部显示 OpenWrt
+# 把源码里 FanchmWrt 字样替换为 OpenWrt
+#   git grep 只搜索 git 跟踪的文本文件, 自动跳过二进制, 最安全
 # ---------------------------------------------------------------------------
 log "将源码中的 FanchmWrt 替换为 OpenWrt"
 (
     cd "${SOURCE_DIR}"
-    # 替换所有文本文件中的 FanchmWrt -> OpenWrt, 跳过 .git 和二进制
-    find . -type f \
-        -not -path './.git/*' \
-        -not -path './bin/*' \
-        -not -path './build_dir/*' \
-        -not -path './staging_dir/*' \
-        -not -path './tmp/*' \
-        -exec grep -Il 'FanchmWrt' {} + 2>/dev/null \
+    git grep -Il 'FanchmWrt' 2>/dev/null \
     | xargs -r sed -i 's/FanchmWrt/OpenWrt/g; s/fanchmwrt/openwrt/g'
 )
 log "替换完成"

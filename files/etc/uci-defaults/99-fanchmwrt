@@ -48,6 +48,14 @@ if [ -x /etc/init.d/ttyd ]; then
     /etc/init.d/ttyd enable 2>/dev/null
 fi
 
+# ---------- IPTV 组播默认开启 ----------
+if [ -f /etc/config/igmpproxy ]; then
+    /etc/init.d/igmpproxy enable 2>/dev/null
+fi
+if [ -f /etc/config/udpxy ]; then
+    /etc/init.d/udpxy enable 2>/dev/null
+fi
+
 # ---------- overlay 热插拔 ----------
 if [ -x /etc/init.d/fcm-overlay-hdd ]; then
     /etc/init.d/fcm-overlay-hdd enable 2>/dev/null

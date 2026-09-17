@@ -1,0 +1,6 @@
+config udpxy
+	option listen 'lan'
+	option port '4022'
+	option max_clients '3'
+	option source 'wan'
+	option enabled '1'

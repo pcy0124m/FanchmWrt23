@@ -43,18 +43,6 @@ if [ -f "${EXTRA_FEEDS}" ]; then
 fi
 
 # ---------------------------------------------------------------------------
-# 把源码里 FanchmWrt 字样替换为 OpenWrt
-#   git grep 只搜索 git 跟踪的文本文件, 自动跳过二进制, 最安全
-# ---------------------------------------------------------------------------
-log "将源码中的 FanchmWrt 替换为 OpenWrt"
-(
-    cd "${SOURCE_DIR}"
-    git grep -Il 'FanchmWrt' 2>/dev/null \
-    | xargs -r sed -i 's/FanchmWrt/OpenWrt/g; s/fanchmwrt/openwrt/g'
-)
-log "替换完成"
-
-# ---------------------------------------------------------------------------
 # 在这里追加你自己的源码级定制, 例如:
 #
 # ( cd "${SOURCE_DIR}" && git apply "${PROJECT_ROOT}/patches/0001-my-fix.patch" )

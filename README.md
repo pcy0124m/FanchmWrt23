@@ -1,6 +1,6 @@
-# OpenWrt for 京东云无线宝一代
+# FanchmWrt for 京东云无线宝一代
 
-基于官方 **[FanchmWrt](https://github.com/fanchmwrt/fanchmwrt)**（OpenWrt 25.12.4）给 **JDCloud RE-SP-01B** 出固件，固件名显示为 OpenWrt。
+基于官方 **[FanchmWrt](https://github.com/fanchmwrt/fanchmwrt)**（OpenWrt 25.12.4）给 **JDCloud RE-SP-01B** 出固件。
 
 官方下载站有亚瑟 / 鲁班 / 雅典娜，**没有无线宝一代**。源码里有这个设备，所以用官方仓自己编。额外加上文件管理器和 Web 终端。
 
@@ -58,7 +58,7 @@
 ### GitHub Actions（推荐）
 
 1. 把本工程推到你的 GitHub 仓库
-2. Actions -> `Build OpenWrt` -> `Run workflow`
+2. Actions -> `Build FanchmWrt` -> `Run workflow`
 3. 约 1-3 小时后到仓库首页 **Releases** 下载 `*-squashfs-sysupgrade.bin`
 
 ### 本机

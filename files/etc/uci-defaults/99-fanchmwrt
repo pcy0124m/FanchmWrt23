@@ -1,13 +1,13 @@
 #!/bin/sh
 #
-# OpenWrt 首次启动初始化 (只跑一次, 成功后本文件会被删掉)
+# FanchmWrt 首次启动初始化 (只跑一次, 成功后本文件会被删掉)
 #
 
 # ---------- 系统标识 ----------
-uci set system.@system[0].hostname='OpenWrt'
+uci set system.@system[0].hostname='FanchmWrt'
 uci set system.@system[0].timezone='CST-8'
 uci set system.@system[0].zonename='Asia/Shanghai'
-uci set system.@system[0].description='OpenWrt on JDCloud RE-SP-01B'
+uci set system.@system[0].description='FanchmWrt on JDCloud RE-SP-01B'
 uci commit system
 
 # ---------- LAN: 192.168.12.1 ----------

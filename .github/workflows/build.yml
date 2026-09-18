@@ -3,8 +3,8 @@ name: Build OpenWrt
 # ============================================================================
 # 云端编译: 推送代码后 GitHub 自动编出固件, 不占用本机资源
 #
-# 产物: fanchmwrt-*-ramips-mt7621-jdcloud_re-sp-01b-squashfs-sysupgrade.bin
-# 下载: Actions 页面 -> 对应运行记录 -> Artifacts
+# 产物: openwrt-*-ramips-mt7621-jdcloud_re-sp-01b-squashfs-sysupgrade.bin
+# 下载: 仓库首页 Releases，或 Actions Artifacts
 # ============================================================================
 
 on:
@@ -120,11 +120,15 @@ jobs:
           path: build.log
           retention-days: 7
 
-      - name: 打 tag 时自动发布 Release
-        if: startsWith(github.ref, 'refs/tags/')
+      - name: 发布 Release
+        if: github.event_name != 'pull_request'
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: firmware-${{ github.run_number }}
+          name: OpenWrt jdcloud_re-sp-01b #${{ github.run_number }}
           files: |
             build/fanchmwrt/bin/targets/ramips/mt7621/*.bin
             build/fanchmwrt/bin/targets/ramips/mt7621/sha256sums
           generate_release_notes: true
+          draft: false
+          prerelease: false

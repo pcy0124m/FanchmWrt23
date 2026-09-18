@@ -58,8 +58,8 @@
 ### GitHub Actions（推荐）
 
 1. 把本工程推到你的 GitHub 仓库
-2. Actions -> `Build FanchmWrt` -> `Run workflow`
-3. 约 1-3 小时后在 Artifacts 下载 `OpenWrt-jdcloud_re-sp-01b`
+2. Actions -> `Build OpenWrt` -> `Run workflow`
+3. 约 1-3 小时后到仓库首页 **Releases** 下载 `*-squashfs-sysupgrade.bin`
 
 ### 本机
 
